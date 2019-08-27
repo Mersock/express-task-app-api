@@ -92,11 +92,13 @@ router.patch('/tasks/:id', auth, async (req, res) => {
 });
 
 router.delete('/tasks/:id', auth, async (req, res) => {
+    const _id = req.params.id;
     try {
-        const task = await Task.findByIdAndDelete({ _id: req.params.id, owner: req.user._id });
-        if (!task) {
-            res.status(404).send()
+        const task = await Task.findOne({ _id });
+        if (!task.owner.equals(req.user._id)) {
+            return res.status(404).send();
         }
+        await Task.findByIdAndDelete(_id);
         res.send(task);
     } catch (error) {
         res.status(500).send();
